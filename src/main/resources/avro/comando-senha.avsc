@@ -1,0 +1,13 @@
+{
+  "doc": "Evento para processar senha",
+  "fields": [
+    {
+      "default": "",
+      "name": "senha",
+      "type": "string"
+    }
+  ],
+  "name": "ComandoSenha",
+  "namespace": "br.com.PoC",
+  "type": "record"
+}

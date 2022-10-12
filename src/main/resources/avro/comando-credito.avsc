@@ -1,0 +1,28 @@
+{
+  "doc": "Evento para realizar débito",
+  "fields": [
+    {
+      "default": "",
+      "name": "conta",
+      "type": "string"
+    },
+    {
+      "default": "",
+      "name": "agencia",
+      "type": "string"
+    },
+    {
+      "default": "",
+      "name": "dac",
+      "type": "string"
+    },
+    {
+      "default": "",
+      "name": "valor",
+      "type": "string"
+    }
+  ],
+  "name": "ComandoCredito",
+  "namespace": "br.com.PoC",
+  "type": "record"
+}

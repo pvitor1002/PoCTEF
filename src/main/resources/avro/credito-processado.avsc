@@ -1,0 +1,18 @@
+{
+  "doc": "Teste Schema",
+  "fields": [
+    {
+      "default": "",
+      "name": "codigo",
+      "type": "string"
+    },
+    {
+      "default": "",
+      "name": "mensagem",
+      "type": "string"
+    }
+  ],
+  "name": "CreditoProcessado",
+  "namespace": "br.com.PoC",
+  "type": "record"
+}
