@@ -27,39 +27,15 @@ public class TransferenciaAtualizadaListener {
     private final ContextDatastore contextDatastore;
 
     @KafkaHandler
-    public void transferenciaAtualizada(SenhaProcessada senhaProcessada, @Headers MessageHeaders messageHeaders, Acknowledgment ack) throws IOException {
+    public void transferenciaAtualizada(TefProcessada tefProcessada, @Headers MessageHeaders messageHeaders, Acknowledgment ack) throws IOException, InterruptedException {
+
+        Thread.sleep(500);
 
         messageHeaderTranslator.translate(messageHeaders);
 
-        System.out.println("Senha Processada.");
+        System.out.println(tefProcessada.getMensagem());
 
-        EventoMudancaEstado<Object> eventoMudancaEstado = buildEventoMudancaEstado(UUID.fromString(String.valueOf(contextDatastore.getHeaders().get("transaction_id"))), messageHeaders, "SENHA_PROCESSADA");
-
-        transferenciaProducer.produceInternalTopic(eventoMudancaEstado);
-        ack.acknowledge();
-    }
-
-    @KafkaHandler
-    public void transferenciaAtualizada(CreditoProcessado comandoAtualizar, @Headers MessageHeaders messageHeaders, Acknowledgment ack) throws IOException {
-
-        messageHeaderTranslator.translate(messageHeaders);
-
-        System.out.println("Credito Processado.");
-
-        EventoMudancaEstado<Object> eventoMudancaEstado = buildEventoMudancaEstado(UUID.fromString(String.valueOf(contextDatastore.getHeaders().get("transaction_id"))), messageHeaders, "CREDITO_PROCESSADO");
-
-        transferenciaProducer.produceInternalTopic(eventoMudancaEstado);
-        ack.acknowledge();
-    }
-
-    @KafkaHandler
-    public void transferenciaAtualizada(DebitoProcessado comandoAtualizar, @Headers MessageHeaders messageHeaders, Acknowledgment ack) throws IOException {
-
-        messageHeaderTranslator.translate(messageHeaders);
-
-        System.out.println("Debito Processado.");
-
-        EventoMudancaEstado<Object> eventoMudancaEstado = buildEventoMudancaEstado(UUID.fromString(String.valueOf(contextDatastore.getHeaders().get("transaction_id"))), messageHeaders, "DEBITO_PROCESSADO");
+        EventoMudancaEstado<Object> eventoMudancaEstado = buildEventoMudancaEstado(UUID.fromString(String.valueOf(contextDatastore.getHeaders().get("transaction_id"))), messageHeaders, tefProcessada.getType());
 
         transferenciaProducer.produceInternalTopic(eventoMudancaEstado);
         ack.acknowledge();

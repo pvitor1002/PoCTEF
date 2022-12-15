@@ -3,6 +3,7 @@ package br.com.puc.TEF.adapters.event.producer;
 import br.com.PoC.ComandoCredito;
 import br.com.PoC.ComandoDebito;
 import br.com.PoC.ComandoSenha;
+import br.com.PoC.TefProcessada;
 import br.com.puc.TEF.adapters.datastore.ContextDatastore;
 import br.com.puc.TEF.adapters.event.response.TransferenciaConcluida;
 import br.com.puc.TEF.domain.entities.TEF;
@@ -38,6 +39,7 @@ public class TransferenciaProducer {
         headers.put("replyChannel", contextDatastore.getHeaders().get("replyChannel").toString());
         headers.put("errorChannel", contextDatastore.getHeaders().get("errorChannel").toString());
         headers.put("instanceId", contextDatastore.getHeaders().get("instanceId").toString());
+        headers.put("transactionId", contextDatastore.getTransactionId().toString());
         Message<String> message = MessageBuilder.withPayload(
                 mapper.writeValueAsString(TransferenciaConcluida.builder()
                         .cpf("12249932689")
@@ -103,12 +105,29 @@ public class TransferenciaProducer {
         kafkaTemplate.send(record);
     }
 
+    public void produceTimeout(String transactionId){
+        ProducerRecord<String, GenericRecord> record = new ProducerRecord<>("tef-processada", UUID.randomUUID().toString(),
+                TefProcessada.newBuilder()
+                        .setCodigo("408")
+                        .setMensagem("Timeout atingido.")
+                        .setType("TIMEOUT_TRANSFERENCIA")
+                        .build()
+        );
+
+        record.headers().add("transaction_id", transactionId.getBytes(StandardCharsets.UTF_8));
+        kafkaTemplate.send(record);
+    }
+
     public void produceInternalTopic(EventoMudancaEstado evento) {
         final ProducerRecord<String, EventoMudancaEstado> producerRecord = new ProducerRecord<>("comando-estado", UUID.randomUUID().toString(), evento);
 
-        producerRecord.headers().add("replyChannel", contextDatastore.getHeaders().get("replyChannel").toString().getBytes());
-        producerRecord.headers().add("errorChannel", contextDatastore.getHeaders().get("errorChannel").toString().getBytes());
-        producerRecord.headers().add("instanceId", contextDatastore.getHeaders().get("instanceId").toString().getBytes());
+        Map<String, Object> headers = contextDatastore.getHeaders();
+
+        headers.forEach((k, v) -> producerRecord.headers().add(k, v.toString().getBytes()));
+
+        //producerRecord.headers().add("replyChannel", contextDatastore.getHeaders().get("replyChannel").toString().getBytes());
+        //producerRecord.headers().add("errorChannel", contextDatastore.getHeaders().get("errorChannel").toString().getBytes());
+        //producerRecord.headers().add("instanceId", contextDatastore.getHeaders().get("instanceId").toString().getBytes());
 
         kafkaTemplateEstado.send(producerRecord).addCallback(s -> {
                     System.out.println("Enviado para tópico interno.");

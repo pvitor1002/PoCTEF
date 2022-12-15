@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class MessageHeaderTranslatorImpl implements MessageHeaderTranslator{
             }
         });
         contextDatastore.setHeaders(headers);
+        contextDatastore.setTransactionId(UUID.fromString(contextDatastore.getHeaders().get("transaction_id").toString()));
     }
 
     @Override

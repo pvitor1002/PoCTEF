@@ -10,9 +10,14 @@
       "default": "",
       "name": "mensagem",
       "type": "string"
+    },
+    {
+      "default": "",
+      "name": "type",
+      "type": "string"
     }
   ],
-  "name": "DebitoProcessado",
+  "name": "TefProcessada",
   "namespace": "br.com.PoC",
   "type": "record"
 }

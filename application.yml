@@ -1,13 +1,16 @@
 server.port: 8085
-
+management:
+  endpoint:
+    health:
+      show-details: always
 spring.cloud:
     stream:
       kafka:
         properties:
-          key.converter.schema.registry.url: http://localhost:8081
-          value.converter.schema.registry.url: http://localhost:8081
+          key.converter.schema.registry.url: http://ec2-18-228-224-98.sa-east-1.compute.amazonaws.com:8081
+          value.converter.schema.registry.url: http://ec2-18-228-224-98.sa-east-1.compute.amazonaws.com:8081
         binder:
-          brokers: localhost:9092
+          brokers: http://ec2-18-228-224-98.sa-east-1.compute.amazonaws.com:9092
         bindings:
           reply:
             consumer:
@@ -37,14 +40,19 @@ spring.cloud:
         request:
           destination: comando-estado
           producer:
-            partition-count: 4
+            partition-count: 2
 
 spring.kafka:
   properties:
-    schema.registy.url: http://localhost:8081
+    max.poll.interval.ms: 1000
+    schema.registy.url: http://ec2-18-228-224-98.sa-east-1.compute.amazonaws.com:8081
     specific.avro.reader: true
-  bootstrap-server: localhost:9092
+  bootstrap-server: http://ec2-18-228-224-98.sa-east-1.compute.amazonaws.com:9092
   value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicRecordNameStrategy
+  consumer:
+    auto-offset-reset: latest
+    enable-auto-commit: false
+    max-poll-records: 500
   listener:
     ack-mode: MANUAL_IMMEDIATE
     concurrency: 11
@@ -70,7 +78,7 @@ transferencia:
       topic-atutalizado: comando-atualizar
       topic-comando: comando-processar
       topic-estado: comando-estado
-      topics: senha-processada,debito-processado,credito-processado
+      topics: tef-processada
     producer:
       topic-processado: transferencia-processada
       topic-finalizado: transferencia-concluida
@@ -79,6 +87,6 @@ transferencia:
 spring:
   data:
     cassandra:
-      contact-points: localhost
-      port: 9042
+      contact-points: cassandra.sa-east-1.amazonaws.com
+      port: 9142
       keyspace-name: keyspace_transferencias

@@ -4,8 +4,10 @@ import br.com.puc.TEF.adapters.datastore.ContextDatastore;
 import br.com.puc.TEF.adapters.event.response.TransferenciaConcluida;
 import br.com.puc.TEF.adapters.gateway.channel.GatewayChannels;
 import br.com.puc.TEF.adapters.gateway.queue.QueueGateway;
+import br.com.puc.TEF.application.usecase.SalvarTefUseCase;
 import br.com.puc.TEF.domain.entities.TEF;
 import br.com.puc.TEF.domain.entities.maquinaestado.EventoMudancaEstado;
+import br.com.puc.TEF.domain.exceptions.TimeoutException;
 import br.com.puc.TEF.domain.types.TipoEventoTransferencia;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +16,8 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @EnableBinding({GatewayChannels.class})
@@ -25,6 +29,7 @@ public class TransferenciaServiceImpl implements TransferenciaService {
     private final QueueGateway gateway;
     private final ObjectMapper mapper;
     private final ContextDatastore contextDatastore;
+    private final SalvarTefUseCase salvarTefUseCase;
 
     @Override
     public TEF execute(TEF tef) throws JsonProcessingException {
@@ -36,8 +41,12 @@ public class TransferenciaServiceImpl implements TransferenciaService {
                 .id(tef.getTransactionId())
                 .build();
 
+        contextDatastore.setTransactionId(tef.getTransactionId());
+        salvarTefUseCase.salvar(tef);
 
-        TransferenciaConcluida transferenciaConcluida = mapper.readValue(gateway.handle(eventoMudancaEstado), TransferenciaConcluida.class);
+        String response = Optional.ofNullable(gateway.handle(eventoMudancaEstado)).orElseThrow(() -> new TimeoutException("Timeout atingido."));
+
+        mapper.readValue(response, TransferenciaConcluida.class);
 
         return tef;
     }

@@ -1,7 +1,10 @@
 package br.com.puc.TEF.application.service;
 
 import br.com.puc.TEF.adapters.datastore.MaquinaEstadoDatastore;
+import br.com.puc.TEF.application.service.handle.TimeoutHandle;
+import br.com.puc.TEF.application.service.handle.TransferenciaCreditoProcessadoHandle;
 import br.com.puc.TEF.application.service.handle.TransferenciaProcessadaHandle;
+import br.com.puc.TEF.application.service.handle.TransferenciaSenhaProcessadaHandle;
 import br.com.puc.TEF.domain.entities.maquinaestado.FaseEvento;
 import br.com.puc.TEF.domain.entities.maquinaestado.MaquinaEstado;
 import br.com.puc.TEF.domain.types.TipoEventoTransferencia;
@@ -21,7 +24,9 @@ public class StateMachineServiceImpl implements StateMachineService{
 
     private final MaquinaEstadoDatastore estadoDatastore;
     private final TransferenciaProcessadaHandle transferenciaProcessadaHandle;
-
+    private final TransferenciaSenhaProcessadaHandle transferenciaSenhaProcessadaHandle;
+    private final TransferenciaCreditoProcessadoHandle transferenciaCreditoProcessadoHandle;
+    private final TimeoutHandle timeoutHandle;
     @Override
     public StateMachine<FaseEvento, TipoEventoTransferencia> createStateMachine(UUID id) throws JsonProcessingException {
         MaquinaEstado maquinaEstado = MaquinaEstado.builder()
@@ -62,11 +67,28 @@ public class StateMachineServiceImpl implements StateMachineService{
 
                 .initial(FaseEvento.TRANSFERENCIA_SOLICITADA)
 
-                .addTransition(FaseEvento.TRANSFERENCIA_SOLICITADA, FaseEvento.TRANSFERENCIA_REALIZADA)
+                .addTransition(FaseEvento.TRANSFERENCIA_SOLICITADA, FaseEvento.TRANSFERENCIA_SENHA_PROCESSADA)
                 .withEvent(TipoEventoTransferencia.SENHA_PROCESSADA)
-                .withEvent(TipoEventoTransferencia.CREDITO_PROCESSADO)
-                .withEvent(TipoEventoTransferencia.DEBITO_PROCESSADO)
-                .withAction(transferenciaProcessadaHandle);
+                .withAction(transferenciaSenhaProcessadaHandle)
 
+                .addTransition(FaseEvento.TRANSFERENCIA_SOLICITADA, FaseEvento.TRANSFERENCIA_TIMEOUT)
+                .withEvent(TipoEventoTransferencia.TIMEOUT_TRANSFERENCIA)
+                .withAction(timeoutHandle)
+
+                .addTransition(FaseEvento.TRANSFERENCIA_SENHA_PROCESSADA, FaseEvento.TRANSFERENCIA_CREDITO_EFETUADO)
+                .withEvent(TipoEventoTransferencia.CREDITO_PROCESSADO)
+                .withAction(transferenciaCreditoProcessadoHandle)
+
+                .addTransition(FaseEvento.TRANSFERENCIA_SENHA_PROCESSADA, FaseEvento.TRANSFERENCIA_TIMEOUT)
+                .withEvent(TipoEventoTransferencia.TIMEOUT_TRANSFERENCIA)
+                .withAction(timeoutHandle)
+
+                .addTransition(FaseEvento.TRANSFERENCIA_CREDITO_EFETUADO, FaseEvento.TRANSFERENCIA_REALIZADA)
+                .withEvent(TipoEventoTransferencia.DEBITO_PROCESSADO)
+                .withAction(transferenciaProcessadaHandle)
+
+                .addTransition(FaseEvento.TRANSFERENCIA_CREDITO_EFETUADO, FaseEvento.TRANSFERENCIA_TIMEOUT)
+                .withEvent(TipoEventoTransferencia.TIMEOUT_TRANSFERENCIA)
+                .withAction(timeoutHandle);
     }
 }

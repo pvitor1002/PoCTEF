@@ -17,7 +17,5 @@ public class MaquinaCriadaHandleImpl implements MaquinaCriadaHandle{
     @Override
     public void transferir(TEF tef) throws JsonProcessingException {
         transferenciaProducer.produceComandoSenha(tef);
-        transferenciaProducer.produceComandoCredito(tef);
-        transferenciaProducer.produceComandoDebito(tef);
     }
 }

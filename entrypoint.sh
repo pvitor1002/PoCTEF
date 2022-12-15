@@ -1,0 +1,8 @@
+#!/bin/sh
+
+AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-"AKIATIEEIFC4FZCKXXRW"}
+AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-"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"}
+
+RUN_CMD="java -jar app.jar"
+
+$RUN_CMD || echo "Iniciando Aplicação"
